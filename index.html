@@ -1,0 +1,90 @@
+<html>
+  <head>
+    <title>Git Top</title>
+    <link rel="stylesheet" href="styles.css"/>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="repos.js"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1.0", {"packages":["corechart"]});
+      google.load("jquery", "1.7.1");
+      google.setOnLoadCallback(initChart);
+      var allRepos = [];
+      
+      function initChart() {
+        var getAll = function(username) {
+          a = false;
+          for (var i=0; i<allRepos.length; i++) {
+            if (allRepos[i][0] == username) { a = allRepos[i]; break; }
+          }
+          return a;  
+        };  
+
+        for (var repo in GitTop) {
+          for (var j=0; j<GitTop[repo].length; j++) {
+            var gt = GitTop[repo][j]
+            var a = getAll(gt[0])
+            if (a) {
+              a[1] = a[1] + gt[1];
+            }
+            else {
+              allRepos.push([gt[0], gt[1]]);
+            }
+          }
+        }
+        allRepos = allRepos.sort(function(a,b) { return (a[1] < b[1])? 1 : -1; });
+        drawChart(allRepos);
+      }
+
+      function drawChart(repo, li) {
+        var data = new google.visualization.DataTable();
+        data.addColumn("string", "Name");
+        data.addColumn("number", "Commits");
+        data.addRows(repo);
+
+        var options = {
+          width: 1400,
+          height: 600,
+          isStacked: true,
+          backgroundColor: "#151515",
+          chartArea: { width:"90%", top:20 },
+          colors : ["#b5e853"],
+          legend: {position: "none"},
+          hAxis: {
+            slantedText: true,
+            slantedTextAngle: 45,
+            textStyle: {color: "#ccc", fontName: "Monaco", fontSize: 16 }
+          },
+          vAxis: {
+           textStyle: {color: "#ccc", fontName: "Monaco", fontSize: 16 },
+           gridlines: { color: "#333" }
+          }
+        };
+
+        var chart = new google.visualization.ColumnChart(document.getElementById("chart_div"));
+        chart.draw(data, options);
+
+        if (arguments.length === 2) {
+          $("li").removeClass("active");
+          $(li).addClass("active");
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="container">
+      <h1>Git Top</h1>
+      <ul>
+        <li class="active" onclick="drawChart(allRepos, this)">All</li>
+        <li onclick="drawChart(GitTop.core, this)">Core</li>
+        <li onclick="drawChart(GitTop.ml, this)">MarkLogic</li>
+        <li onclick="drawChart(GitTop.platform, this)">Platform</li>
+        <li onclick="drawChart(GitTop.aim, this)">Aim</li>
+        <li onclick="drawChart(GitTop.track, this)">Track</li>
+        <li onclick="drawChart(GitTop.identity, this)">Identity</li>
+        <li onclick="drawChart(GitTop.infra, this)">Infra</li>
+        <li onclick="drawChart(GitTop.mud, this)">Mud</li>
+      </ul>
+      <div id="chart_div"></div>
+    </div>
+  </body>
+</html>
